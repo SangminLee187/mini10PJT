@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=euc-kr" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
+
 <%--
 <%@ page import="java.util.List"  %>
 <%@page import="com.model2.mvc.service.domain.User"%>
@@ -31,12 +32,14 @@ String searchKeyword = CommonUtil.null2str(search.getSearchKeyword());
 	<script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
 	<script type="text/javascript">
 	function fncGetList(currentPage) {
-		//document.getElementById("currentPage").value = currentPage;
 		$("#currentPage").val(currentPage)
-	   	//document.detailForm.submit();
+		console.log("current Page : "+$("#currentPage").val());
+		
+		
 		$("form").attr("method" , "POST").attr("action" , "/product/listProduct").submit();
 	}
 
+	//클릭시 자세히보기 및 구매버튼
 	$(function() {
 			$( "td.ct_btn01:contains('검색')" ).on("click" , function() {
 				fncGetList(1);
@@ -44,7 +47,9 @@ String searchKeyword = CommonUtil.null2str(search.getSearchKeyword());
 			
 			$( ".ct_list_pop td:nth-child(3)" ).on("click" , function() {
 					//self.location ="/product/getProduct?prodNo="+$("input[type='hidden']").val()+"&menu=${param.menu}";
-				var prodNo = $("input[type='hidden']").val();
+				//var prodNo = $("input[type='hidden']").val();
+				var prodNo = $(this).find('.hiddenProduct').val();
+
 				$.ajax( 
 						{
 							url : "/product/json/getProduct/"+prodNo ,
@@ -56,12 +61,12 @@ String searchKeyword = CommonUtil.null2str(search.getSearchKeyword());
 							},
 							success : function(JSONData , status) {
 								var displayValue = "<h3>"
-															+"제품명 : "+JSONData.prodName+"<br/>"
-															+"가  격 : "+JSONData.price+"<br/>"
-															+"세부사항 : "+JSONData.prodDetail+"<br/>"
-															+"제조일 : "+JSONData.manuDate+"<br/>"
-															+"등록일 : "+JSONData.regDate+"<br/>"
-															+"</h3>";
+									+"제품명 : "+JSONData.prodName+"<br/>"
+									+"가  격 : "+JSONData.price+"<br/>"
+									+"세부사항 : "+JSONData.prodDetail+"<br/>"
+									+"제조일 : "+JSONData.manuDate+"<br/>"
++"<input type='button' value='구매' onclick=location.href='/product/getProduct?prodNo="+JSONData.prodNo+"&menu=${param.menu}'>"
+									+"</h3>";
 								$("h3").remove();
 								$( "#"+prodNo+"" ).html(displayValue);
 							}
@@ -69,9 +74,25 @@ String searchKeyword = CommonUtil.null2str(search.getSearchKeyword());
 			});
 			
 			$( ".ct_list_pop td:nth-child(3)" ).css("color" , "blue");
-
 	});
-	
+
+	<%--
+	//무한스크롤
+	$(function(){
+		var index = 0;
+		$(window).scroll(function(){
+			var $window = $(this);
+			var scrollTop = $window.scrollTop();
+			var windowHeight = $window.height();
+			var documentHeight = $(document).height();
+			
+			if(scrollTop + windowHeight + 1 >= documentHeight){
+				index++;
+				setTimeout(fncGetList,200);
+			}
+		})
+	})
+	--%>
 	</script>
 </head>
 
@@ -214,15 +235,16 @@ String searchKeyword = CommonUtil.null2str(search.getSearchKeyword());
 					<!-- 
 					<a href="/product/getProduct?prodNo=${product.prodNo}&menu=${param.menu}">${product.prodName}</a>
 					 -->${product.prodName}
+				<!-- <input type="hidden" value="${product.prodNo}"/> prodNo 10000 반복 --> 
+				<input type="hidden" value="${product.prodNo}" class="hiddenProduct"/>
 				</c:if>
 				</td>
-				<input type="hidden" value="${product.prodNo}"/>
 			<td></td>			
-		<td align="left">${product.price}</td>
+			<td align="left">${product.price}</td>
 			<td></td>
-		<td align="left">${product.regDate}</td>
+			<td align="left">${product.regDate}</td>
 			<td></td>
-		<td align="left">
+			<td align="left">
 			<c:if test= "${empty product.proTranCode }"> 판매중		
 			</c:if>
 			<c:if test= "${product.proTranCode == '111'}"> 구매완료
@@ -248,9 +270,8 @@ String searchKeyword = CommonUtil.null2str(search.getSearchKeyword());
 <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top:10px;">
 	<tr>
 		<td align="center">
-			<input type="hidden" id="currentPage" name="currentPage" value=""/>
+		   <input type="hidden" id="currentPage" name="currentPage" value=""/>
 			<input type="hidden" id="menu" name="menu" value="${param.menu}"/>
-			<input type="hidden" id="priceCondition" name="priceCondition" value=""/>
 			<%--
 			<% if( resultPage.getCurrentPage() <= resultPage.getPageUnit() ){ %>
 					◀ 이전
