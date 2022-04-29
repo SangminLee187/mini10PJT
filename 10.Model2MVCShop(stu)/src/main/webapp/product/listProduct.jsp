@@ -34,61 +34,124 @@ String searchKeyword = CommonUtil.null2str(search.getSearchKeyword());
 	function fncGetList(currentPage) {
 		$("#currentPage").val(currentPage)
 		console.log("current Page : "+$("#currentPage").val());
-		
-		
 		$("form").attr("method" , "POST").attr("action" , "/product/listProduct").submit();
 	}
-
 	//클릭시 자세히보기 및 구매버튼
-	$(function() {
-			$( "td.ct_btn01:contains('검색')" ).on("click" , function() {
-				fncGetList(1);
-			});
+	$(function () {						//start of function
+		$( "td.ct_btn01:contains('검색')" ).on("click" , function() {
+			fncGetList(1);
+		});
 			
-			$( ".ct_list_pop td:nth-child(3)" ).on("click" , function() {
-					//self.location ="/product/getProduct?prodNo="+$("input[type='hidden']").val()+"&menu=${param.menu}";
-				//var prodNo = $("input[type='hidden']").val();
-				var prodNo = $(this).find('.hiddenProduct').val();
-
-				$.ajax( 
-						{
-							url : "/product/json/getProduct/"+prodNo ,
-							method : "GET" ,
-							dataType : "json" ,
-							headers : {
-								"Accept" : "application/json",
-								"Content-Type" : "application/json"
-							},
-							success : function(JSONData , status) {
-								var displayValue = "<h3>"
-									+"제품명 : "+JSONData.prodName+"<br/>"
-									+"가  격 : "+JSONData.price+"<br/>"
-									+"세부사항 : "+JSONData.prodDetail+"<br/>"
-									+"제조일 : "+JSONData.manuDate+"<br/>"
+		$( ".ct_list_pop td:nth-child(3)" ).on("click" , function() {
+			//self.location ="/product/getProduct?prodNo="+$("input[type='hidden']").val()+"&menu=${param.menu}";
+			//var prodNo = $("input[type='hidden']").val();
+			var prodNo = $(this).find('.hiddenProduct').val();
+			$.ajax(
+				{
+					url : "/product/json/getProduct/"+prodNo ,					
+					method : "GET" ,			
+					dataType : "json" ,
+					headers : {
+							"Accept" : "application/json",
+							"Content-Type" : "application/json"
+					},
+					success : function(JSONData , status) {
+						var displayValue = "<h3>"
+								+"제품명 : "+JSONData.prodName+"<br/>"
+								+"가  격 : "+JSONData.price+"<br/>"
+								+"세부사항 : "+JSONData.prodDetail+"<br/>"
+								+"제조일 : "+JSONData.manuDate+"<br/>"
 +"<input type='button' value='구매' onclick=location.href='/product/getProduct?prodNo="+JSONData.prodNo+"&menu=${param.menu}'>"
-									+"</h3>";
-								$("h3").remove();
-								$( "#"+prodNo+"" ).html(displayValue);
-							}
-					});
-			});
-			
-			$( ".ct_list_pop td:nth-child(3)" ).css("color" , "blue");
-	});
+										+"</h3>";
+						$("h3").remove();
+						$( "#"+prodNo+"" ).html(displayValue);	
+					}
+				});
+		});
+		$( ".ct_list_pop td:nth-child(3)" ).css("color" , "blue");
+		
+		/////////////////////////////////////////////////////////////////
+		var count = 1;
+		for(var i = 1 ; i<=20 ; i++){
+			count = i;
+		   $("<h1>"+count+" line scroll</h1>").appendTo("body");
 
+	        if(count == 20) {
+	            $(window).bind("scroll",infinityScrollFunction);
+	        }
+		}
+		
+		 function infinityScrollFunction() {
+
+		        //현재문서의 높이를 구함.
+		        var documentHeight  = $(document).height();
+		        console.log("documentHeight : " + documentHeight);
+		        
+		        //scrollTop() 메서드는 선택된 요소의 세로 스크롤 위치를 설정하거나 반환    
+		        //스크롤바가 맨 위쪽에 있을때 , 위치는 0
+		        console.log("window의 scrollTop() : " + $(window).scrollTop()); 
+		        //height() 메서드는 브라우저 창의 높이를 설정하거나 반환
+		        console.log("window의 height() : " + $(window).height());
+		        var windouwHeight = $(window).height();
+		        
+		        //세로 스크롤위치 max값과 창의 높이를 더하면 현재문서의 높이를 구할수있음.
+		        //세로 스크롤위치 값이 max이면 문서의 끝에 도달했다는 의미
+		        var scrollHeight = $(window).scrollTop()+$(window).height();         
+		        console.log("scrollHeight : " + scrollHeight+"\n\n");
+		            
+		        ///////////////////////
+		    var $window = $(this);
+			var scrollTop = $(window).scrollTop();
+			var windowHeight = $(window).height();
+			var documentHeight = $(document).height();
+		        //////////////////////
+		        
+		        if(scrollTop + windowHeight == documentHeight) { //문서의 맨끝에 도달했을때 내용 추가
+		                //count = count + 1;
+		                count++;
+		                //$("<h1> infinity scroll </h>").appendTo("body");
+		                $("<h1>"+count+" line scroll</h1>").appendTo(".ct_list_pop");
+		            }
+		        }
+		    }//function infinityScrollFunction()
+
+		/////////////////////////////////////////////////////////////////
+	});									//end of function
 	<%--
 	//무한스크롤
 	$(function(){
-		var index = 0;
+		var index = 1;
 		$(window).scroll(function(){
 			var $window = $(this);
-			var scrollTop = $window.scrollTop();
-			var windowHeight = $window.height();
+			var scrollTop = $(window).scrollTop();
+			var windowHeight = $(window).height();
 			var documentHeight = $(document).height();
 			
 			if(scrollTop + windowHeight + 1 >= documentHeight){
 				index++;
-				setTimeout(fncGetList,200);
+				setTimeout(infiniteScroll,200);
+			}
+			
+			var prodNo = $(this).find('.hiddenProduct').val();
+			function infiniteScroll(){
+				$.ajax({
+					url : "/product/json/getProduct/"+prodNo ,					
+					method : "GET" ,			
+					dataType : "json" ,
+					success : function(JSONData , status) {
+						var displayValue = "<h3>"
+								+"제품명 : "+JSONData.prodName+"<br/>"
+								+"가  격 : "+JSONData.price+"<br/>"
+								+"세부사항 : "+JSONData.prodDetail+"<br/>"
+								+"제조일 : "+JSONData.manuDate+"<br/>"
++"<input type='button' value='구매' onclick=location.href='/product/getProduct?prodNo="+JSONData.prodNo+"&menu=${param.menu}'>"
+										+"</h3>";
+						$("h3").remove();
+						$( "#"+prodNo+"" ).html(displayValue);	
+					}
+				})	
+				}
+			}
 			}
 		})
 	})
@@ -103,7 +166,7 @@ String searchKeyword = CommonUtil.null2str(search.getSearchKeyword());
 <!--
 <form name="detailForm" action="/product/listProduct?menu=${param.menu}" method="post">
 -->
-
+<form name="detailForm">
 
 
 <table width="100%" height="37" border="0" cellpadding="0"	cellspacing="0">
